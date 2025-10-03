@@ -73,6 +73,7 @@ func RegisterParameters(cmd *cobra.Command, paramsConfig map[string]Parameter) {
 			}
 
 		case reflect.Array, reflect.Slice:
+			recordArrayParamForCommand(cmd, "--"+p.Name)
 			// Imply string array
 			var defaultValue []string = nil
 			if p.DefaultValue != "" {
@@ -80,6 +81,7 @@ func RegisterParameters(cmd *cobra.Command, paramsConfig map[string]Parameter) {
 			}
 			if p.ShortName != "" {
 				cmd.Flags().StringArrayP(p.Name, p.ShortName, defaultValue, p.Usage)
+				recordArrayParamForCommand(cmd, "-"+p.ShortName)
 			} else {
 				cmd.Flags().StringArray(p.Name, defaultValue, p.Usage)
 			}

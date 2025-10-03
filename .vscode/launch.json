@@ -6,7 +6,9 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "main.go"
+            "program": "main.go",
+            "args": []
+            // "args": ["image", "apply-tags", "-i", "image:tag", "-t", "t1", "t2", "t3", "-d", "sha256:5f2332b1661b2d0967f2652dfe906ef4893438d298290cd090a1358653af1d55"]
         },
         {
             "name": "Connect into container",

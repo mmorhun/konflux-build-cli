@@ -1,11 +1,35 @@
 package common
 
-import "strings"
+import (
+	"strings"
 
-// List of all subcommands with array parameters to expand.
-var arrayParams = map[string][]string{
-	"image apply-tags": {"--tags", "-t"},
-	"image build":      {"--labels", "-l", "annotations", "-a"},
+	"github.com/spf13/cobra"
+)
+
+var arrayParamsInCommands = map[*cobra.Command][]string{}
+
+// recordArrayParamForCommand saves the command and the array param for future processing.
+func recordArrayParamForCommand(cmd *cobra.Command, paramName string) {
+	params := arrayParamsInCommands[cmd]
+	params = append(params, paramName)
+	arrayParamsInCommands[cmd] = params
+}
+
+// buildArrayParamsData creates a map of all subcommands with array parameters to expand.
+// We cannot build this map at params registration time, because not all commands were initialized,
+// which makes the command path unknown.
+func buildArrayParamsData() map[string][]string {
+	arrayParams := map[string][]string{}
+	for cmd, params := range arrayParamsInCommands {
+		commandPath := cmd.CommandPath()
+		// Remove the root command from the command path
+		firstSpaceIndex := strings.Index(commandPath, " ")
+		if firstSpaceIndex > 0 {
+			commandPath = commandPath[firstSpaceIndex+1:]
+		}
+		arrayParams[commandPath] = params
+	}
+	return arrayParams
 }
 
 // expandArrayParameters is a workaround for missing pflag ability to parse parameters array separated by spaces.
@@ -20,17 +44,19 @@ func ExpandArrayParameters(argv []string) []string {
 	out := make([]string, 0, len(argv))
 
 	// Determine the command which is run.
-	cmdPath := []string{}
+	commandPathArray := []string{}
 	for _, arg := range argv {
 		if strings.HasPrefix(arg, "-") {
 			break
 		}
-		cmdPath = append(cmdPath, arg)
+		commandPathArray = append(commandPathArray, arg)
 	}
+	commandPath := strings.Join(commandPathArray, " ")
 
-	joinedPath := strings.Join(cmdPath, " ")
+	arrayParams := buildArrayParamsData()
+
 	multiFlags := map[string]bool{}
-	for _, arrayParam := range arrayParams[joinedPath] {
+	for _, arrayParam := range arrayParams[commandPath] {
 		multiFlags[arrayParam] = true
 	}
 
@@ -44,7 +70,7 @@ func ExpandArrayParameters(argv []string) []string {
 		}
 
 		// Handle parameters with = for example: --array1=a1 a2
-		if strings.HasPrefix(arg, "--") && strings.Contains(arg, "=") {
+		if strings.HasPrefix(arg, "-") && strings.Contains(arg, "=") {
 			parts := strings.SplitN(arg, "=", 2)
 			flag := parts[0]
 			if multiFlags[flag] {
