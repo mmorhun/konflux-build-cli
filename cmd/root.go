@@ -49,7 +49,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&logLevel, "loglevel", "info", "Set the logging level (debug, info, warn, error, fatal)")
 
 	var workdir string
-	rootCmd.PersistentFlags().StringVarP(&workdir, "workdir", "w", "", "Set working dirrectory")
+	rootCmd.PersistentFlags().StringVarP(&workdir, "workdir", "w", "", "Set working directory")
 
 	cobra.OnInitialize(func() {
 		if err := l.InitLogger(logLevel); err != nil {

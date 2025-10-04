@@ -69,18 +69,23 @@ func ExpandArrayParameters(argv []string) []string {
 			break
 		}
 
-		// Handle parameters with = for example: --array1=a1 a2
+		// Handle parameters with = for example: --array=v1 v2
 		if strings.HasPrefix(arg, "-") && strings.Contains(arg, "=") {
 			parts := strings.SplitN(arg, "=", 2)
 			flag := parts[0]
 			if multiFlags[flag] {
-				for _, v := range strings.Split(parts[1], ",") {
-					if v != "" {
-						out = append(out, flag, v)
-					}
+				out = append(out, flag, parts[1])
+				i++
+				for i < len(argv) && argv[i] != "--" && !strings.HasPrefix(argv[i], "-") {
+					out = append(out, flag, argv[i])
+					i++
 				}
+				// Now i points to the next parameter, if any.
+				// Step back, because the for loop will increment i
+				i--
 				continue
 			}
+			// Just regular arg=value parameter
 			out = append(out, arg)
 			continue
 		}
@@ -92,14 +97,10 @@ func ExpandArrayParameters(argv []string) []string {
 				out = append(out, arg, argv[j])
 				j++
 			}
-			// If no values given, it must be an empty array.
-			// Remove the arg, because empty array is not supported by pflag, so it will fail with an error.
-			if j == i+1 {
-				// do not let pflag fail, omit the array arg
-				// out = append(out, arg)
-				j++
-			}
-			i = j - 1
+			// Now j points to the next parameter, if any.
+			i = j
+			// Step back, because the for loop will increment i
+			i--
 			continue
 		}
 
