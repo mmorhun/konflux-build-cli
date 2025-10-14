@@ -7,7 +7,6 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/mmorhun/konflux-task-cli/pkg/commands"
-	"github.com/mmorhun/konflux-task-cli/pkg/common"
 )
 
 const (
@@ -23,7 +22,7 @@ const (
 	resultShortShaPath  = "/result/dir/short_sha"
 )
 
-func setupTestGitClone(mockResultsWriter *common.MockResultsWriter, mockGitCli *MockGitCli) *commands.GitClone {
+func setupTestGitClone(mockResultsWriter *MockResultsWriter, mockGitCli *MockGitCli) *commands.GitClone {
 	return &commands.GitClone{
 		Params: &commands.GitCloneParams{
 			RepoUrl: repoUrl,
@@ -48,7 +47,7 @@ func TestGitClone_Success(t *testing.T) {
 	g := NewWithT(t)
 
 	mockGitCli := &MockGitCli{}
-	mockResultsWriter := &common.MockResultsWriter{}
+	mockResultsWriter := &MockResultsWriter{}
 	gitClone := setupTestGitClone(mockResultsWriter, mockGitCli)
 
 	mockGitCli.CloneFunc = func(url, branch string, depth int) (string, error) {
@@ -85,7 +84,7 @@ func TestGitClone_CloneError(t *testing.T) {
 	g := NewWithT(t)
 
 	mockGitCli := &MockGitCli{}
-	mockResultsWriter := &common.MockResultsWriter{}
+	mockResultsWriter := &MockResultsWriter{}
 	gitClone := setupTestGitClone(mockResultsWriter, mockGitCli)
 
 	mockGitCli.CloneFunc = func(url, branch string, depth int) (string, error) {
@@ -101,7 +100,7 @@ func TestGitClone_GetShaError(t *testing.T) {
 	g := NewWithT(t)
 
 	mockGitCli := &MockGitCli{}
-	mockResultsWriter := &common.MockResultsWriter{}
+	mockResultsWriter := &MockResultsWriter{}
 	gitClone := setupTestGitClone(mockResultsWriter, mockGitCli)
 
 	mockGitCli.CloneFunc = func(url, branch string, depth int) (string, error) {
@@ -120,7 +119,7 @@ func TestGitClone_WriteError(t *testing.T) {
 	g := NewWithT(t)
 
 	mockGitCli := &MockGitCli{}
-	mockResultsWriter := &common.MockResultsWriter{}
+	mockResultsWriter := &MockResultsWriter{}
 	gitClone := setupTestGitClone(mockResultsWriter, mockGitCli)
 
 	mockGitCli.CloneFunc = func(url, branch string, depth int) (string, error) {

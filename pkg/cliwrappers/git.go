@@ -2,7 +2,6 @@ package cliwrappers
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"fmt"
 	"regexp"
@@ -56,19 +55,19 @@ func (g *GitCli) Clone(url, branch string, depth int) (string, error) {
 		gitArgs = append(gitArgs, "--depth", strconv.Itoa(depth))
 	}
 
-	stdout, stderr, err := g.Executor.Execute("git", gitArgs...)
+	stdout, stderr, _, err := g.Executor.Execute("git", gitArgs...)
 	if err != nil {
-		l.Logger.Errorf("[stdout]:\n%s", stdout.String())
-		l.Logger.Errorf("[stderr]:\n%s", stderr.String())
+		l.Logger.Errorf("[stdout]:\n%s", stdout)
+		l.Logger.Errorf("[stderr]:\n%s", stderr)
 		return "", fmt.Errorf("git clone failed: %v", err)
 	}
 
 	if g.Verbose {
-		l.Logger.Info("[stdout]:\n" + stderr.String())
+		l.Logger.Info("[stdout]:\n" + stderr)
 	}
 
 	// Parse output for "Cloning into 'repository-name'..."
-	repoDir, err := parseRepoDir(stderr.Bytes())
+	repoDir, err := parseRepoDir(stderr)
 	if err != nil {
 		return "", fmt.Errorf("failed to obtain cloned repository directory: %w", err)
 	}
@@ -77,8 +76,8 @@ func (g *GitCli) Clone(url, branch string, depth int) (string, error) {
 }
 
 // parseRepoDir parses git clone output and returns directory name into which the git repository was cloned.
-func parseRepoDir(output []byte) (string, error) {
-	scanner := bufio.NewScanner(bytes.NewReader(output))
+func parseRepoDir(output string) (string, error) {
+	scanner := bufio.NewScanner(strings.NewReader(output))
 	re := regexp.MustCompile(`Cloning into '(.+)'`)
 
 	// Check all lines in case of additional git config that prints headers.
@@ -93,17 +92,17 @@ func parseRepoDir(output []byte) (string, error) {
 }
 
 func (g *GitCli) GetRepoHeadFullSha(gitRepoDir string) (string, error) {
-	stdout, stderr, err := g.Executor.ExecuteInDir(gitRepoDir, "git", "rev-parse", "HEAD")
+	stdout, stderr, _, err := g.Executor.ExecuteInDir(gitRepoDir, "git", "rev-parse", "HEAD")
 	if err != nil {
-		l.Logger.Errorf("[stdout]:\n%s", stdout.String())
-		l.Logger.Errorf("[stderr]:\n%s", stderr.String())
+		l.Logger.Errorf("[stdout]:\n%s", stdout)
+		l.Logger.Errorf("[stderr]:\n%s", stderr)
 		return "", fmt.Errorf("git rev-parse failed: %v", err)
 	}
 
 	if g.Verbose {
-		l.Logger.Info("[stdout]:\n" + stdout.String())
+		l.Logger.Info("[stdout]:\n" + stdout)
 	}
 
-	fullSha := strings.TrimSpace(string(stdout.String()))
+	fullSha := strings.TrimSpace(string(stdout))
 	return fullSha, nil
 }

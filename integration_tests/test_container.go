@@ -64,13 +64,13 @@ func (c *TestContainer) containerExists(isRunning bool) (bool, error) {
 	}
 	args = append(args, "-f", "name="+c.name)
 
-	stdout, stderr, err := c.executor.Execute(containerTool, args...)
+	stdout, stderr, _, err := c.executor.Execute(containerTool, args...)
 	if c.verbose || err != nil {
-		fmt.Printf("[stdout]:\n%s\n", stdout.String())
-		fmt.Printf("[stderr]:\n%s\n", stderr.String())
+		fmt.Printf("[stdout]:\n%s\n", stdout)
+		fmt.Printf("[stderr]:\n%s\n", stderr)
 		return false, err
 	}
-	return len(stdout.String()) > 0, nil
+	return len(stdout) > 0, nil
 }
 
 func (c *TestContainer) checkContainer() error {
@@ -120,44 +120,44 @@ func (c *TestContainer) Start() error {
 
 	args = append(args, "--entrypoint", "sleep", c.image, "infinity")
 
-	stdout, stderr, err := c.executor.Execute(containerTool, args...)
+	stdout, stderr, _, err := c.executor.Execute(containerTool, args...)
 	if c.verbose || err != nil {
-		fmt.Printf("[stdout]:\n%s\n", stdout.String())
-		fmt.Printf("[stderr]:\n%s\n", stderr.String())
+		fmt.Printf("[stdout]:\n%s\n", stdout)
+		fmt.Printf("[stderr]:\n%s\n", stderr)
 	}
 	c.isStarted = true
 	return err
 }
 
 func (c *TestContainer) Delete() error {
-	stdout, stderr, err := c.executor.Execute(containerTool, "rm", "-f", c.name)
+	stdout, stderr, _, err := c.executor.Execute(containerTool, "rm", "-f", c.name)
 	if c.verbose || err != nil {
-		fmt.Printf("[stdout]:\n%s\n", stdout.String())
-		fmt.Printf("[stderr]:\n%s\n", stderr.String())
+		fmt.Printf("[stdout]:\n%s\n", stdout)
+		fmt.Printf("[stderr]:\n%s\n", stderr)
 	}
 	return err
 }
 
 func (c *TestContainer) CopyFileIntoContainer(hostPath, containerPath string) error {
-	stdout, stderr, err := c.executor.Execute(containerTool, "cp", hostPath, c.name+":"+containerPath)
+	stdout, stderr, _, err := c.executor.Execute(containerTool, "cp", hostPath, c.name+":"+containerPath)
 	if c.verbose || err != nil {
-		fmt.Printf("[stdout]:\n%s\n", stdout.String())
-		fmt.Printf("[stderr]:\n%s\n", stderr.String())
+		fmt.Printf("[stdout]:\n%s\n", stdout)
+		fmt.Printf("[stderr]:\n%s\n", stderr)
 	}
 	return err
 }
 
 func (c *TestContainer) GetFileContent(path string) (string, error) {
-	stdout, stderr, err := c.executor.Execute(containerTool, "exec", c.name, "cat", path)
+	stdout, stderr, _, err := c.executor.Execute(containerTool, "exec", c.name, "cat", path)
 	if c.verbose || err != nil {
-		fmt.Printf("[stdout]:\n%s\n", stdout.String())
-		fmt.Printf("[stderr]:\n%s\n", stderr.String())
-		if strings.Contains(stderr.String(), "No such file or directory") {
+		fmt.Printf("[stdout]:\n%s\n", stdout)
+		fmt.Printf("[stderr]:\n%s\n", stderr)
+		if strings.Contains(stderr, "No such file or directory") {
 			return "", fmt.Errorf("no such file or directory: '%s'", path)
 		}
 		return "", err
 	}
-	return stdout.String(), nil
+	return stdout, nil
 }
 
 func (c *TestContainer) ExecuteAndWait(command string, args ...string) error {
@@ -165,10 +165,10 @@ func (c *TestContainer) ExecuteAndWait(command string, args ...string) error {
 	execArgs = append(execArgs, command)
 	execArgs = append(execArgs, args...)
 
-	stdout, stderr, err := c.executor.Execute(containerTool, execArgs...)
+	stdout, stderr, _, err := c.executor.Execute(containerTool, execArgs...)
 	if c.verbose || err != nil {
-		fmt.Printf("[stdout]:\n%s\n", stdout.String())
-		fmt.Printf("[stderr]:\n%s\n", stderr.String())
+		fmt.Printf("[stdout]:\n%s\n", stdout)
+		fmt.Printf("[stderr]:\n%s\n", stderr)
 	}
 	return err
 }
@@ -190,10 +190,10 @@ func (c *TestContainer) DebugCli(cliArgs ...string) error {
 		execArgs = append(execArgs, cliArgs...)
 	}
 
-	stdout, stderr, err := c.executor.Execute(containerTool, execArgs...)
+	stdout, stderr, _, err := c.executor.Execute(containerTool, execArgs...)
 	if c.verbose || err != nil {
-		fmt.Printf("[stdout]:\n%s\n", stdout.String())
-		fmt.Printf("[stderr]:\n%s\n", stderr.String())
+		fmt.Printf("[stdout]:\n%s\n", stdout)
+		fmt.Printf("[stderr]:\n%s\n", stderr)
 	}
 	return err
 }

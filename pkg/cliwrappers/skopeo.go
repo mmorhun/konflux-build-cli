@@ -75,15 +75,15 @@ func (s *SkopeoCli) Copy(args *SkopeoCopyArgs) error {
 	dockerPrefix := "docker://"
 	scopeoArgs = append(scopeoArgs, dockerPrefix+args.BaseImage, dockerPrefix+args.TargetImage)
 
-	stdout, stderr, err := s.Executor.Execute("skopeo", scopeoArgs...)
+	stdout, stderr, _, err := s.Executor.Execute("skopeo", scopeoArgs...)
 	if err != nil {
-		l.Logger.Errorf("[stdout]:\n%s", stdout.String())
-		l.Logger.Errorf("[stderr]:\n%s", stderr.String())
+		l.Logger.Errorf("[stdout]:\n%s", stdout)
+		l.Logger.Errorf("[stderr]:\n%s", stderr)
 		return fmt.Errorf("skopeo copy failed: %v", err)
 	}
 
 	if s.Verbose {
-		l.Logger.Info("[stdout]:\n" + stdout.String())
+		l.Logger.Info("[stdout]:\n" + stdout)
 	}
 
 	return nil
@@ -125,16 +125,16 @@ func (s *SkopeoCli) Inspect(args *SkopeoInspectArgs) (string, error) {
 	dockerPrefix := "docker://"
 	scopeoArgs = append(scopeoArgs, dockerPrefix+args.ImageRef)
 
-	stdout, stderr, err := s.Executor.Execute("skopeo", scopeoArgs...)
+	stdout, stderr, _, err := s.Executor.Execute("skopeo", scopeoArgs...)
 	if err != nil {
-		l.Logger.Errorf("[stdout]:\n%s", stdout.String())
-		l.Logger.Errorf("[stderr]:\n%s", stderr.String())
+		l.Logger.Errorf("[stdout]:\n%s", stdout)
+		l.Logger.Errorf("[stderr]:\n%s", stderr)
 		return "", fmt.Errorf("skopeo inspect failed: %v", err)
 	}
 
 	if s.Verbose {
-		l.Logger.Info("[stdout]:\n" + stdout.String())
+		l.Logger.Info("[stdout]:\n" + stdout)
 	}
 
-	return stdout.String(), nil
+	return stdout, nil
 }

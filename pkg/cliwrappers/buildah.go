@@ -78,20 +78,20 @@ func (b *BuildahCli) Build(args *BuildahBuildArgs) (string, string, error) {
 	}
 	unshareArgs = append(unshareArgs, "--", "sh", "-c", buildahCmd)
 
-	stdout, stderr, err := b.Executor.Execute("unshare", unshareArgs...)
+	stdout, stderr, _, err := b.Executor.Execute("unshare", unshareArgs...)
 	if err != nil {
-		l.Logger.Errorf("[stdout]:\n%s", stdout.String())
-		l.Logger.Errorf("[stderr]:\n%s", stderr.String())
+		l.Logger.Errorf("[stdout]:\n%s", stdout)
+		l.Logger.Errorf("[stderr]:\n%s", stderr)
 		return "", "", fmt.Errorf("unshare ... buildah build failed: %v", err)
 	}
 
-	image, localDigest, err := parseImageAndDigest(stdout.String())
+	image, localDigest, err := parseImageAndDigest(stdout)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to parse image digest: %w", err)
 	}
 
 	if b.Verbose {
-		l.Logger.Info("[stdout]:\n" + stdout.String())
+		l.Logger.Info("[stdout]:\n" + stdout)
 	}
 
 	return image, "sha256:" + localDigest, nil
@@ -120,23 +120,23 @@ func parseImageAndDigest(output string) (string, string, error) {
 // Push image to remote registry and returns remote image digest
 func (b *BuildahCli) Push(image string) (string, error) {
 	const digestFile = "/tmp/digestfile"
-	stdout, stderr, err := b.Executor.Execute("buildah", "push", "--digestfile", digestFile, image)
+	stdout, stderr, _, err := b.Executor.Execute("buildah", "push", "--digestfile", digestFile, image)
 	if err != nil {
-		l.Logger.Errorf("[stdout]:\n%s", stdout.String())
-		l.Logger.Errorf("[stderr]:\n%s", stderr.String())
+		l.Logger.Errorf("[stdout]:\n%s", stdout)
+		l.Logger.Errorf("[stderr]:\n%s", stderr)
 		return "", fmt.Errorf("buildah push failed: %v", err)
 	}
 
 	if b.Verbose {
-		l.Logger.Info("[stdout]:\n" + stdout.String())
+		l.Logger.Info("[stdout]:\n" + stdout)
 	}
 
-	stdout, stderr, err = b.Executor.Execute("cat", digestFile)
+	stdout, stderr, _, err = b.Executor.Execute("cat", digestFile)
 	if err != nil {
-		l.Logger.Errorf("[stdout]:\n%s", stdout.String())
-		l.Logger.Errorf("[stderr]:\n%s", stderr.String())
+		l.Logger.Errorf("[stdout]:\n%s", stdout)
+		l.Logger.Errorf("[stderr]:\n%s", stderr)
 		return "", fmt.Errorf("failed to read digest file: %v", err)
 	}
 
-	return stdout.String(), nil
+	return stdout, nil
 }

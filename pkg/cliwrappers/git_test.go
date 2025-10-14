@@ -1,7 +1,6 @@
 package cliwrappers_test
 
 import (
-	"bytes"
 	"errors"
 	"testing"
 
@@ -24,11 +23,11 @@ func TestGitCli_Clone_DefaultBranch(t *testing.T) {
 	gitCli, executor := setupGitCli()
 
 	var capturedArgs []string
-	executor.executeFunc = func(command string, args ...string) (stdout, stderr bytes.Buffer, err error) {
+	executor.executeFunc = func(command string, args ...string) (stdout, stderr string, code int, err error) {
 		g.Expect(command).To(Equal("git"))
 		capturedArgs = args
-		stderr.WriteString("Cloning into 'test-repo'...\n")
-		return stdout, stderr, nil
+		stderr = "Cloning into 'test-repo'...\n"
+		return stdout, stderr, 0, nil
 	}
 
 	_, err := gitCli.Clone("https://github.com/test/repo.git", "", 0)
@@ -46,10 +45,10 @@ func TestGitCli_Clone_SpecifiedBranch(t *testing.T) {
 	gitCli, executor := setupGitCli()
 
 	var capturedArgs []string
-	executor.executeFunc = func(command string, args ...string) (stdout, stderr bytes.Buffer, err error) {
+	executor.executeFunc = func(command string, args ...string) (stdout, stderr string, code int, err error) {
 		capturedArgs = args
-		stderr.WriteString("Cloning into 'test-repo'...\n")
-		return stdout, stderr, nil
+		stderr = "Cloning into 'test-repo'...\n"
+		return stdout, stderr, 0, nil
 	}
 
 	_, err := gitCli.Clone("https://github.com/test/repo.git", "devel", 0)
@@ -64,10 +63,10 @@ func TestGitCli_Clone_WithDepth(t *testing.T) {
 	gitCli, executor := setupGitCli()
 
 	var capturedArgs []string
-	executor.executeFunc = func(command string, args ...string) (stdout, stderr bytes.Buffer, err error) {
+	executor.executeFunc = func(command string, args ...string) (stdout, stderr string, code int, err error) {
 		capturedArgs = args
-		stderr.WriteString("Cloning into 'test-repo'...\n")
-		return stdout, stderr, nil
+		stderr = "Cloning into 'test-repo'...\n"
+		return stdout, stderr, 0, nil
 	}
 
 	_, err := gitCli.Clone("https://github.com/test/repo.git", "main", 5)
@@ -82,10 +81,10 @@ func TestGitCli_Clone_NoDepthWhenZero(t *testing.T) {
 	gitCli, executor := setupGitCli()
 
 	var capturedArgs []string
-	executor.executeFunc = func(command string, args ...string) (stdout, stderr bytes.Buffer, err error) {
+	executor.executeFunc = func(command string, args ...string) (stdout, stderr string, code int, err error) {
 		capturedArgs = args
-		stderr.WriteString("Cloning into 'test-repo'...\n")
-		return stdout, stderr, nil
+		stderr = "Cloning into 'test-repo'...\n"
+		return stdout, stderr, 0, nil
 	}
 
 	_, err := gitCli.Clone("https://github.com/test/repo.git", "main", 0)
@@ -98,9 +97,9 @@ func TestGitCli_Clone_ReturnsRepoPath(t *testing.T) {
 	g := NewWithT(t)
 	gitCli, executor := setupGitCli()
 
-	executor.executeFunc = func(command string, args ...string) (stdout, stderr bytes.Buffer, err error) {
-		stderr.WriteString("Cloning into 'my-custom-repo'...\n")
-		return stdout, stderr, nil
+	executor.executeFunc = func(command string, args ...string) (stdout, stderr string, code int, err error) {
+		stderr = "Cloning into 'my-custom-repo'...\n"
+		return stdout, stderr, 0, nil
 	}
 
 	repoPath, err := gitCli.Clone("https://github.com/test/repo.git", "main", 0)
@@ -113,9 +112,9 @@ func TestGitCli_Clone_ComplexRepoNames(t *testing.T) {
 	g := NewWithT(t)
 	gitCli, executor := setupGitCli()
 
-	executor.executeFunc = func(command string, args ...string) (stdout, stderr bytes.Buffer, err error) {
-		stderr.WriteString("Cloning into 'repo-with-dashes_and_underscores.git'...\n")
-		return stdout, stderr, nil
+	executor.executeFunc = func(command string, args ...string) (stdout, stderr string, code int, err error) {
+		stderr = "Cloning into 'repo-with-dashes_and_underscores.git'...\n"
+		return stdout, stderr, 0, nil
 	}
 
 	repoPath, err := gitCli.Clone("https://github.com/test/repo.git", "main", 0)
@@ -128,11 +127,11 @@ func TestGitCli_Clone_WithAdditionalHeaders(t *testing.T) {
 	g := NewWithT(t)
 	gitCli, executor := setupGitCli()
 
-	executor.executeFunc = func(command string, args ...string) (stdout, stderr bytes.Buffer, err error) {
-		stderr.WriteString("Note: switching to 'main'.\n")
-		stderr.WriteString("Cloning into 'test-repo'...\n")
-		stderr.WriteString("remote: Counting objects: 100, done.\n")
-		return stdout, stderr, nil
+	executor.executeFunc = func(command string, args ...string) (stdout, stderr string, code int, err error) {
+		stderr = "Note: switching to 'main'.\n"
+		stderr += "Cloning into 'test-repo'...\n"
+		stderr += "remote: Counting objects: 100, done.\n"
+		return stdout, stderr, 0, nil
 	}
 
 	repoPath, err := gitCli.Clone("https://github.com/test/repo.git", "main", 0)
@@ -145,9 +144,9 @@ func TestGitCli_Clone_FailsOnGitError(t *testing.T) {
 	g := NewWithT(t)
 	gitCli, executor := setupGitCli()
 
-	executor.executeFunc = func(command string, args ...string) (stdout, stderr bytes.Buffer, err error) {
-		stderr.WriteString("fatal: repository not found")
-		return stdout, stderr, errors.New("exit status 128")
+	executor.executeFunc = func(command string, args ...string) (stdout, stderr string, code int, err error) {
+		stderr = "fatal: repository not found"
+		return stdout, stderr, 0, errors.New("exit status 128")
 	}
 
 	_, err := gitCli.Clone("https://github.com/test/nonexistent.git", "main", 0)
@@ -169,9 +168,9 @@ func TestGitCli_Clone_FailsOnUnparseableOutput(t *testing.T) {
 	g := NewWithT(t)
 	gitCli, executor := setupGitCli()
 
-	executor.executeFunc = func(command string, args ...string) (stdout, stderr bytes.Buffer, err error) {
-		stderr.WriteString("Some unexpected output without cloning info\n")
-		return stdout, stderr, nil
+	executor.executeFunc = func(command string, args ...string) (stdout, stderr string, code int, err error) {
+		stderr = "Some unexpected output without cloning info\n"
+		return stdout, stderr, 0, nil
 	}
 
 	_, err := gitCli.Clone("https://github.com/test/repo.git", "main", 0)
@@ -185,12 +184,12 @@ func TestGitCli_GetRepoHeadFullSha_Success(t *testing.T) {
 	gitCli, executor := setupGitCli()
 
 	expectedSha := "abcd1234567890abcdef1234567890abcdef1234"
-	executor.executeInDirFunc = func(workdir, command string, args ...string) (stdout, stderr bytes.Buffer, err error) {
+	executor.executeInDirFunc = func(workdir, command string, args ...string) (stdout, stderr string, code int, err error) {
 		g.Expect(workdir).To(Equal("/path/to/repo"))
 		g.Expect(command).To(Equal("git"))
 		g.Expect(args).To(Equal([]string{"rev-parse", "HEAD"}))
-		stdout.WriteString(expectedSha + "\n")
-		return stdout, stderr, nil
+		stdout = expectedSha + "\n"
+		return stdout, stderr, 0, nil
 	}
 
 	sha, err := gitCli.GetRepoHeadFullSha("/path/to/repo")
@@ -204,9 +203,9 @@ func TestGitCli_GetRepoHeadFullSha_TrimsWhitespace(t *testing.T) {
 	gitCli, executor := setupGitCli()
 
 	expectedSha := "abcd1234567890abcdef1234567890abcdef1234"
-	executor.executeInDirFunc = func(workdir, command string, args ...string) (stdout, stderr bytes.Buffer, err error) {
-		stdout.WriteString("  " + expectedSha + "  \n\t")
-		return stdout, stderr, nil
+	executor.executeInDirFunc = func(workdir, command string, args ...string) (stdout, stderr string, code int, err error) {
+		stdout = "  " + expectedSha + "  \n\t"
+		return stdout, stderr, 0, nil
 	}
 
 	sha, err := gitCli.GetRepoHeadFullSha("/path/to/repo")
@@ -221,9 +220,9 @@ func TestGitCli_GetRepoHeadFullSha_VerboseMode(t *testing.T) {
 	gitCli.Verbose = true
 
 	expectedSha := "abcd1234567890abcdef1234567890abcdef1234"
-	executor.executeInDirFunc = func(workdir, command string, args ...string) (stdout, stderr bytes.Buffer, err error) {
-		stdout.WriteString(expectedSha + "\n")
-		return stdout, stderr, nil
+	executor.executeInDirFunc = func(workdir, command string, args ...string) (stdout, stderr string, code int, err error) {
+		stdout = expectedSha + "\n"
+		return stdout, stderr, 0, nil
 	}
 
 	sha, err := gitCli.GetRepoHeadFullSha("/path/to/repo")
@@ -236,9 +235,9 @@ func TestGitCli_GetRepoHeadFullSha_FailsOnGitError(t *testing.T) {
 	g := NewWithT(t)
 	gitCli, executor := setupGitCli()
 
-	executor.executeInDirFunc = func(workdir, command string, args ...string) (stdout, stderr bytes.Buffer, err error) {
-		stderr.WriteString("fatal: not a git repository")
-		return stdout, stderr, errors.New("exit status 128")
+	executor.executeInDirFunc = func(workdir, command string, args ...string) (stdout, stderr string, code int, err error) {
+		stderr = "fatal: not a git repository"
+		return stdout, stderr, 0, errors.New("exit status 128")
 	}
 
 	_, err := gitCli.GetRepoHeadFullSha("/invalid/path")

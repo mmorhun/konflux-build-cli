@@ -1,6 +1,10 @@
-package common
+package commands_test
 
-var _ ResultsWriterInterface = &MockResultsWriter{}
+import (
+	"github.com/mmorhun/konflux-task-cli/pkg/common"
+)
+
+var _ common.ResultsWriterInterface = &MockResultsWriter{}
 
 type MockResultsWriter struct {
 	Verbose bool
