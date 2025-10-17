@@ -23,12 +23,10 @@ var mycommandCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		myCommand, err := commands.NewMyCommand(cmd)
 		if err != nil {
-			l.Logger.Error(err)
-			return
+			l.Logger.Fatal(err)
 		}
 		if err := myCommand.Run(); err != nil {
-			l.Logger.Error(err)
-			return
+			l.Logger.Fatal(err)
 		}
 	},
 }
@@ -91,8 +89,9 @@ import (
 	l "github.com/konflux-ci/konflux-task-cli/pkg/logger"
 )
 
+// ParamsConfig defines parameters for the command.
 MyCommandParamsConfig = map[string]common.Parameter{
-	"url": {
+	"url": { // Name field should be equal to the key
 		Name:       "url",
 		ShortName:  "u",
 		EnvVarName: "URL",
@@ -124,6 +123,8 @@ MyCommandParamsConfig = map[string]common.Parameter{
 	},
 }
 
+// MyCommandParams holds parsed parameter values.
+// paramName tag value must equal to the parameter name in ParamsConfig.
 type MyCommandParams struct {
 	Url       string   `paramName:"url"`
 	Counter   string   `paramName:"count"`
@@ -131,6 +132,9 @@ type MyCommandParams struct {
 	Verbose   bool     `paramName:"verbose"`
 }
 
+// MyCommandResultFilesPath holds the path to the file where each result must be written.
+// env tag defines environment variable to read result file path from.
+// If a result environment variable is not set, it fails with an error.
 type MyCommandResultFilesPath struct {
 	Location string `env:"RESULT_LOCATION"`
 	Hash     string `env:"RESULT_HASH"`

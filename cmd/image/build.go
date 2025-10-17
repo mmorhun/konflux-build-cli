@@ -16,12 +16,10 @@ var BuildCmd = &cobra.Command{
 		l.Logger.Info("Starting image build")
 		imageBuild, err := commands.NewImageBuild(cmd)
 		if err != nil {
-			l.Logger.Error(err)
-			return
+			l.Logger.Fatal(err)
 		}
 		if err := imageBuild.Run(); err != nil {
-			l.Logger.Error(err)
-			return
+			l.Logger.Fatal(err)
 		}
 		l.Logger.Info("Finishing image build")
 	},

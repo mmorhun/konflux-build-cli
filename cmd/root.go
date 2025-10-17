@@ -34,8 +34,8 @@ var rootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	processed := common.ExpandArrayParameters(os.Args[1:])
-	rootCmd.SetArgs(processed)
+	processedArgs := common.ExpandArrayParameters(os.Args[1:])
+	rootCmd.SetArgs(processedArgs)
 
 	err := rootCmd.Execute()
 	if err != nil {
@@ -49,12 +49,12 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&logLevel, "loglevel", "info", "Set the logging level (debug, info, warn, error, fatal)")
 
 	var workdir string
-	rootCmd.PersistentFlags().StringVarP(&workdir, "workdir", "w", "", "Set working directory")
+	rootCmd.PersistentFlags().StringVar(&workdir, "workdir", "", "Set working directory")
 
 	cobra.OnInitialize(func() {
 		if err := l.InitLogger(logLevel); err != nil {
 			fmt.Printf("failed to init logger: %s", err.Error())
-			os.Exit(1)
+			os.Exit(2)
 		}
 
 		if workdir == "" {
@@ -64,7 +64,7 @@ func init() {
 		if workdir != "" {
 			if err := os.Chdir(workdir); err != nil {
 				l.Logger.Fatalf("failed to apply workdir '%s': %s", workdir, err.Error())
-				os.Exit(2)
+				os.Exit(3)
 			}
 		}
 	})

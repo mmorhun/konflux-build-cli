@@ -23,12 +23,10 @@ Tags can be defined in two ways:
 		l.Logger.Info("Starting apply-tags")
 		applyTags, err := commands.NewApplyTags(cmd)
 		if err != nil {
-			l.Logger.Error(err)
-			return
+			l.Logger.Fatal(err)
 		}
 		if err := applyTags.Run(); err != nil {
-			l.Logger.Error(err)
-			return
+			l.Logger.Fatal(err)
 		}
 		l.Logger.Info("Finishing apply-tags")
 	},

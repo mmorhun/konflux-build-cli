@@ -21,12 +21,10 @@ The command requires git cli installed.`,
 		l.Logger.Info("Starting git clone")
 		gitClone, err := commands.NewGitClone(cmd)
 		if err != nil {
-			l.Logger.Error(err)
-			return
+			l.Logger.Fatal(err)
 		}
 		if err := gitClone.Run(); err != nil {
-			l.Logger.Error(err)
-			return
+			l.Logger.Fatal(err)
 		}
 		l.Logger.Info("Finishing git clone")
 	},
